@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#10101c">
+  <title>Days Since the Breakup</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      color: #ffffff;
+      background:
+        radial-gradient(circle at top, #33245c, transparent 55%),
+        #10101c;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 420px;
+      padding: 30px 22px;
+      text-align: center;
+      background: rgba(31, 29, 49, 0.95);
+      border: 1px solid #55417c;
+      border-radius: 24px;
+      box-shadow: 0 15px 50px #00000055;
+    }
+
+    .heart {
+      font-size: 40px;
+    }
+
+    h1 {
+      font-size: 26px;
+      color: #d4bfff;
+      margin: 15px 0;
+    }
+
+    .subtitle {
+      color: #c3bdd5;
+      line-height: 1.6;
+    }
+
+    #days {
+      font-size: clamp(42px, 12vw, 60px);
+      font-weight: bold;
+      color: #c4a5ff;
+      margin: 25px 0 5px;
+      overflow-wrap: anywhere;
+    }
+
+    #label {
+      color: #bcb3d2;
+      margin-bottom: 25px;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 13px;
+      margin: 7px 0;
+      border-radius: 10px;
+      font-size: 16px;
+    }
+
+    input {
+      background: #151421;
+      color: white;
+      border: 1px solid #65518b;
+    }
+
+    button {
+      border: none;
+      background: #a78bfa;
+      color: #171125;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    #message {
+      min-height: 24px;
+      color: #c3bdd5;
+      font-size: 13px;
+      margin-top: 15px;
+    }
+
+    footer {
+      color: #9288aa;
+      font-size: 12px;
+      margin-top: 25px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="card">
+    <div class="heart">💜</div>
+
+    <h1>Days Since the Breakup</h1>
+
+    <p class="subtitle">
+      Every day is a new page in your story.
+    </p>
+
+    <div id="days">0</div>
+    <div id="label">days passed</div>
+
+    <p class="subtitle">Choose your breakup date</p>
+
+    <input type="date" id="breakupDate"
+           aria-label="Choose breakup date">
+
+    <button id="saveButton">Save Date</button>
+    <button id="changeButton" hidden>Change Date</button>
+
+    <p id="message" role="status">
+      Choose a date to start your counter.
+    </p>
+
+    <footer>
+      Your date is saved in this browser on this device.
+    </footer>
+  </main>
+
+  <script>
+    const dateInput = document.getElementById("breakupDate");
+    const daysDisplay = document.getElementById("days");
+    const label = document.getElementById("label");
+    const message = document.getElementById("message");
+    const saveButton = document.getElementById("saveButton");
+    const changeButton = document.getElementById("changeButton");
+
+    const todayString = () => {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    dateInput.max = todayString();
+
+    function updateCounter() {
+      const value = localStorage.getItem("breakupDate");
+
+      if (!value) {
+        daysDisplay.textContent = "0";
+        label.textContent = "days passed";
+        return;
+      }
+
+      const parts = value.split("-").map(Number);
+      const start = Date.UTC(parts[0], parts[1] - 1, parts[2]);
+      const now = new Date();
+      const today = Date.UTC(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+
+      const elapsed = today - start;
+
+      if (!Number.isFinite(start) || elapsed < 0) {
+        message.textContent = "Please select a valid date.";
+        return;
+      }
+
+      const days = Math.floor(elapsed / 86400000);
+
+      daysDisplay.textContent = days;
+      label.textContent = days === 1 ? "day passed" : "days passed";
+      dateInput.value = value;
+      message.textContent = "Your counter is up to date.";
+      dateInput.hidden = true;
+      saveButton.hidden = true;
+      changeButton.hidden = false;
+    }
+
+    saveButton.addEventListener("click", () => {
+      const value = dateInput.value;
+
+      if (!value || value > todayString()) {
+        message.textContent = "Please select a valid date.";
+        return;
+      }
+
+      localStorage.setItem("breakupDate", value);
+      updateCounter();
+    });
+
+    changeButton.addEventListener("click", () => {
+      dateInput.hidden = false;
+      saveButton.hidden = false;
+      changeButton.hidden = true;
+      message.textContent = "Choose your new date and save it.";
+    });
+
+    updateCounter();
+  </script>
+</body>
+</html>
